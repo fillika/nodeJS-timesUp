@@ -1,0 +1,26 @@
+{
+  "name": "nodejs-timesup",
+  "version": "1.0.0",
+  "description": "Backend for Node JS",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fillika/nodeJS-timesUp.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/fillika/nodeJS-timesUp/issues"
+  },
+  "homepage": "https://github.com/fillika/nodeJS-timesUp#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  }
+}
