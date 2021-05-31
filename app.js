@@ -17,6 +17,8 @@ const page404 = fs.readFileSync(
 
 var corsOptions = {
   origin: 'http://127.0.0.1:5500',
+  methods: "POST",
+  allowedHeaders: 'application/json'
 }
 
 app.use(cors());
