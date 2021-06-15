@@ -1,12 +1,28 @@
+// 60c8be578a7a1e9f8c8edecb - userID
+const userID = "60c8be578a7a1e9f8c8edecb";
+const TaskModel = require("../models/task");
+
 async function getAllTasks(req, res) {
-  res.status(200).json({
-    status: "success",
-    message: "Get all tasks",
-    data: {
-      count: "Some number here...",
-      tasks: "[Some tasks here...]",
-    },
-  });
+  try {
+    const result = await TaskModel.find({ userID: userID });
+
+    res.status(200).json({
+      status: "success",
+      message: "Get all tasks",
+      data: {
+        tasks: result,
+      },
+    });
+  } catch (error) {
+    res.status(200).json({
+      status: "fail",
+      message: error.message,
+      error: error,
+      data: {
+        tasks: null,
+      },
+    });
+  }
 }
 
 async function createTask(req, res) {

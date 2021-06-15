@@ -20,24 +20,3 @@ module.exports = async function () {
     console.error(error);
   }
 };
-
-async function createKitty() {
-  const kittySchema = new mongoose.Schema({
-    name: {
-      type: String,
-      required: [true, "Kitty always must have a name"],
-      unique: true,
-    },
-  });
-
-  const Kitten = mongoose.model("kitten", kittySchema);
-
-  try {
-    await Kitten.create({ name: "Kitty" });
-  } catch (error) {
-    console.log("ERROR:", error);
-  }
-}
-
-
-// createKitty();
