@@ -4,7 +4,7 @@
   "description": "Backend for Node JS",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon app.js"
+    "start": "nodemon server.js"
   },
   "repository": {
     "type": "git",
@@ -19,8 +19,10 @@
   "homepage": "https://github.com/fillika/nodeJS-timesUp#readme",
   "dependencies": {
     "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
     "express": "^4.17.1",
-    "mongodb": "^3.6.9"
+    "mongodb": "^3.6.9",
+    "mongoose": "^5.12.12"
   },
   "devDependencies": {
     "nodemon": "^2.0.7"
