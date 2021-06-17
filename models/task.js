@@ -1,5 +1,10 @@
 const mongoose = require("mongoose");
 
+const timeSchema = new mongoose.Schema({
+  start: Date,
+  end: Date,
+});
+
 const TaskSchema = new mongoose.Schema({
   userID: {
     type: String,
@@ -10,14 +15,7 @@ const TaskSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
-  time: {
-    type: [
-      {
-        from: Date,
-        to: Date,
-      },
-    ],
-  },
+  time: [timeSchema],
 });
 
 const TaskModel = mongoose.model("task", TaskSchema);

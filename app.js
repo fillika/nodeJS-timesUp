@@ -22,6 +22,7 @@ var corsOptions = {
 };
 
 app.use(cors());
+app.use(express.json());
 app.use(express.static("public"));
 
 app.use("/api/v1/tasks", cors(corsOptions), taskRouter);

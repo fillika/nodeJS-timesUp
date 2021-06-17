@@ -1,4 +1,3 @@
-// 60c8be578a7a1e9f8c8edecb - userID
 const userID = "60c8be578a7a1e9f8c8edecb";
 const TaskModel = require("../models/task");
 
@@ -14,7 +13,7 @@ async function getAllTasks(req, res) {
       },
     });
   } catch (error) {
-    res.status(200).json({
+    res.status(404).json({
       status: "fail",
       message: error.message,
       error: error,
@@ -26,13 +25,23 @@ async function getAllTasks(req, res) {
 }
 
 async function createTask(req, res) {
-  res.status(200).json({
-    status: "success",
-    message: "Task was created",
-    data: {
-      task: "Created task",
-    },
-  });
+  try {
+    const result = await TaskModel.create(req.body);
+
+    res.status(200).json({
+      status: "success",
+      message: "Task was created",
+      data: {
+        task: result,
+      },
+    });
+  } catch (error) {
+    res.status(400).json({
+      status: "fail",
+      message: error.message,
+      error: error,
+    });
+  }
 }
 
 async function updateTask(req, res) {
