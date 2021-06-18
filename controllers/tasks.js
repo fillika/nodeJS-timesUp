@@ -32,7 +32,11 @@ async function createTask(req, res) {
     if (isExist) {
       const query = await TaskModel.findOne({ name: req.body.name });
       const timeArr = [...query.get("time"), req.body.time[0]];
-      const result = await TaskModel.findOneAndUpdate({ name: req.body.name }, {time: timeArr});
+      const result = await TaskModel.findOneAndUpdate(
+        { name: req.body.name },
+        { time: timeArr },
+        { new: true } // Опция для того, чтобы прислать новый, уже изменененный таск
+      );
 
       res.status(200).json({
         status: "success",
@@ -52,8 +56,6 @@ async function createTask(req, res) {
         },
       });
     }
-
-
   } catch (error) {
     res.status(200).json({
       status: "fail",
@@ -78,6 +80,8 @@ async function updateTask(req, res) {
 
 async function deleteTask(req, res) {
   const { id } = req.params;
+
+  await TaskModel.remove();
 
   res.status(204).json({
     status: "success",
