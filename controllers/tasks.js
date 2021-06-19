@@ -26,19 +26,19 @@ async function getAllTasks(req, res) {
 }
 
 async function createTask(req, res) {
-  // TODO Проверка на совпадение по имени, вынести в middleware
   try {
     const result = await TaskModel.create(req.body);
 
     res.status(200).json({
       status: "success",
+      action: "CREATE",
       message: "Task was created",
       data: {
         task: result,
       },
     });
   } catch (error) {
-    res.status(200).json({
+    res.status(400).json({
       status: "fail",
       message: error.message,
       error: error,
@@ -91,6 +91,7 @@ async function isExist(req, res, next) {
 
       res.status(200).json({
         status: "success",
+        action: "UPDATE",
         message: "Task was updated",
         data: {
           task: result,
