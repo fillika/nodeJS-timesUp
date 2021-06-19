@@ -4,7 +4,9 @@ const _ = require("lodash");
 
 async function getAllTasks(req, res) {
   try {
-    const result = await TaskModel.find({ userID: userID });
+    const result = await TaskModel.find({ userID: userID }).sort({ at: "desc" }).limit(80);
+
+    // TODO сделать сортировку по датам
 
     res.status(200).json({
       status: "success",

@@ -6,6 +6,22 @@ const timeSchema = new mongoose.Schema({
 });
 
 const TaskSchema = new mongoose.Schema({
+  at: {
+    type: Date,
+    required: true,
+  },
+  start: {
+    type: Date,
+    required: true,
+  },
+  stop: {
+    type: Date,
+    required: true,
+  },
+  duration: {
+    type: Number,
+    required: true,
+  },
   userID: {
     type: String,
     required: true,
@@ -13,7 +29,6 @@ const TaskSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-    unique: true,
   },
   time: [timeSchema],
 });
