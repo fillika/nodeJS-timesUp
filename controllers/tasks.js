@@ -3,11 +3,11 @@ const TaskModel = require("../models/task");
 const _ = require("lodash");
 
 async function getAllTasks(req, res) {
+  const result = await TaskModel.find({ userID: userID })
+    .sort({ at: "desc" })
+    .limit(80);
+
   try {
-    const result = await TaskModel.find({ userID: userID }).sort({ at: "desc" }).limit(80);
-
-    // TODO сделать сортировку по датам
-
     res.status(200).json({
       status: "success",
       message: "Get all tasks",
@@ -76,7 +76,32 @@ async function deleteTask(req, res) {
   });
 }
 
-// middleware
+// middlewares
+
+async function middle(req, res, next) {
+  try {
+    const result = await TaskModel.find({ userID: userID })
+      .sort({ at: "desc" })
+      .limit(80);
+
+    next();
+  } catch (error) {
+    console.log(error);
+  }
+
+  function createKey(date) {
+    const day =
+      new Date(date).getDate() < 10
+        ? `0${new Date(date).getDate()}`
+        : new Date(date).getDate();
+    const month =
+      new Date(date).getMonth() + 1 < 10
+        ? `0${new Date(date).getMonth() + 1}`
+        : new Date(date).getMonth() + 1;
+
+    return `${day}.${month}`;
+  }
+}
 
 async function isExist(req, res, next) {
   try {
@@ -113,4 +138,5 @@ module.exports = {
   updateTask,
   deleteTask,
   isExist,
+  middle,
 };

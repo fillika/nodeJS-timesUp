@@ -1,10 +1,5 @@
 const mongoose = require("mongoose");
 
-const timeSchema = new mongoose.Schema({
-  start: Date,
-  end: Date,
-});
-
 const TaskSchema = new mongoose.Schema({
   at: {
     type: Date,
@@ -30,7 +25,6 @@ const TaskSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  time: [timeSchema],
 });
 
 const TaskModel = mongoose.model("task", TaskSchema);
