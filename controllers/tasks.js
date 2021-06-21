@@ -61,74 +61,64 @@ async function updateTask(req, res) {
   });
 }
 
-async function deleteTask(req, res) {
+async function deleteTaskByID(req, res) {
   const { id } = req.params;
 
-  await TaskModel.remove();
+  if (id) {
+    try {
+      const result = await TaskModel.findByIdAndDelete(id);
 
-  res.status(204).json({
-    status: "success",
-    message: "Task was deleted",
-    id,
-    data: {
-      task: null,
-    },
-  });
-}
-
-// middlewares
-
-async function middle(req, res, next) {
-  try {
-    const result = await TaskModel.find({ userID: userID })
-      .sort({ at: "desc" })
-      .limit(80);
-
-    next();
-  } catch (error) {
-    console.log(error);
-  }
-
-  function createKey(date) {
-    const day =
-      new Date(date).getDate() < 10
-        ? `0${new Date(date).getDate()}`
-        : new Date(date).getDate();
-    const month =
-      new Date(date).getMonth() + 1 < 10
-        ? `0${new Date(date).getMonth() + 1}`
-        : new Date(date).getMonth() + 1;
-
-    return `${day}.${month}`;
-  }
-}
-
-async function isExist(req, res, next) {
-  try {
-    const isExist = await TaskModel.exists({ name: req.body.name });
-
-    if (isExist) {
-      const query = await TaskModel.findOne({ name: req.body.name });
-      const timeArr = _.concat(query.get("time"), req.body.time[0]);
-      const result = await TaskModel.findOneAndUpdate(
-        { name: req.body.name },
-        { time: timeArr },
-        { new: true } // Опция для того, чтобы прислать новый, уже изменененный таск
-      );
-
-      res.status(200).json({
+      res.status(204).json({
         status: "success",
-        action: "UPDATE",
-        message: "Task was updated",
-        data: {
-          task: result,
-        },
+        message: "Task was deleted",
+        result,
+        id,
       });
-    } else {
-      next();
+    } catch (error) {
+      res.status(400).json({
+        status: "fail",
+        message: error.message,
+        error,
+      });
     }
-  } catch (error) {
-    console.log(error);
+  } else {
+    res.status(400).json({
+      status: "fail",
+      message: "You have to send :ID param",
+    });
+  }
+}
+
+async function deleteManyTaskByName(req, res) {
+  const { name } = req.body;
+
+  if (name) {
+    try {
+      // TODO нужно настроить удаление тасков за определенную дату
+      const result = await TaskModel.deleteMany({ name: name });
+
+      if (result.deletedCount) {
+        res.status(204).json({
+          status: "success",
+          message: "All task was deleted",
+        });
+      } else {
+        const err = new Error('Task does not exist');
+        err.deletedCount = result.deletedCount
+        throw err;
+      }
+    } catch (error) {
+      res.status(400).json({
+        status: "fail",
+        message: error.message,
+        error,
+      });
+    }
+  } else {
+    res.status(400).json({
+      status: "fail",
+      message: "You have to send NAME in Body.JSON",
+    });
   }
 }
 
@@ -136,7 +126,6 @@ module.exports = {
   getAllTasks,
   createTask,
   updateTask,
-  deleteTask,
-  isExist,
-  middle,
+  deleteTaskByID,
+  deleteManyTaskByName
 };
