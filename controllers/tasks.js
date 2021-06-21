@@ -90,12 +90,21 @@ async function deleteTaskByID(req, res) {
 }
 
 async function deleteManyTaskByName(req, res) {
-  const { name } = req.body;
+  const { name, date } = req.body;
+  const dateStart = new Date(date.slice(0, 10));
+  const nextDay = new Date(dateStart).getTime() + 86400000;
+  const dateEnd = new Date(nextDay);
 
-  if (name) {
+  if (name && date) {
     try {
-      // TODO нужно настроить удаление тасков за определенную дату
-      const result = await TaskModel.deleteMany({ name: name });
+      const query = {
+        name: name,
+        at: {
+          $gte: dateStart,
+          $lte: dateEnd,
+        },
+      };
+      const result = await TaskModel.deleteMany(query);
 
       if (result.deletedCount) {
         res.status(204).json({
@@ -103,8 +112,8 @@ async function deleteManyTaskByName(req, res) {
           message: "All task was deleted",
         });
       } else {
-        const err = new Error('Task does not exist');
-        err.deletedCount = result.deletedCount
+        const err = new Error("Task does not exist");
+        err.deletedCount = result.deletedCount;
         throw err;
       }
     } catch (error) {
@@ -127,5 +136,5 @@ module.exports = {
   createTask,
   updateTask,
   deleteTaskByID,
-  deleteManyTaskByName
+  deleteManyTaskByName,
 };
