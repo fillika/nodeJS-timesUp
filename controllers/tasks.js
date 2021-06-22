@@ -29,14 +29,21 @@ async function getAllTasks(req, res) {
 
 async function createTask(req, res) {
   try {
-    const result = await TaskModel.create(req.body);
+    const task = await TaskModel.create(req.body);
+
+    // Todo принимать переменную, по которой нужно получить определенное кол-во тасков.
+    // Todo например это может быть множитель (1 * 60 или 3 * 60)
+    const result = await TaskModel.find({ userID: userID })
+      .sort({ at: "desc" })
+      .limit(80);
 
     res.status(200).json({
       status: "success",
       action: "CREATE",
       message: "Task was created",
       data: {
-        task: result,
+        task,
+        tasks: result,
       },
     });
   } catch (error) {
@@ -52,15 +59,19 @@ async function updateTask(req, res) {
   try {
     const { id } = req.params;
 
-    const result = await TaskModel.findByIdAndUpdate(id, req.body, {
-      new: true,
-    });
+    await TaskModel.findByIdAndUpdate(id, req.body);
+
+    // Todo принимать переменную, по которой нужно получить определенное кол-во тасков.
+    // Todo например это может быть множитель (1 * 60 или 3 * 60)
+    const result = await TaskModel.find({ userID: userID })
+      .sort({ at: "desc" })
+      .limit(80);
 
     res.status(200).json({
       status: "success",
       message: "Task was updated",
       data: {
-        task: result,
+        tasks: result,
       },
     });
   } catch (error) {
@@ -77,13 +88,20 @@ async function deleteTaskByID(req, res) {
 
   if (id) {
     try {
-      const result = await TaskModel.findByIdAndDelete(id);
+      await TaskModel.findByIdAndDelete(id);
 
-      res.status(204).json({
+      // Todo принимать переменную, по которой нужно получить определенное кол-во тасков.
+      // Todo например это может быть множитель (1 * 60 или 3 * 60)
+      const result = await TaskModel.find({ userID: userID })
+        .sort({ at: "desc" })
+        .limit(80);
+
+      res.status(200).json({
         status: "success",
         message: "Task was deleted",
-        result,
-        id,
+        data: {
+          tasks: result,
+        },
       });
     } catch (error) {
       res.status(400).json({
