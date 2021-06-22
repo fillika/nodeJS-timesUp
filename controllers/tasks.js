@@ -49,16 +49,27 @@ async function createTask(req, res) {
 }
 
 async function updateTask(req, res) {
-  const { id } = req.params;
+  try {
+    const { id } = req.params;
 
-  res.status(200).json({
-    status: "success",
-    message: "Task was updated",
-    id,
-    data: {
-      task: "Updated task",
-    },
-  });
+    const result = await TaskModel.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
+
+    res.status(200).json({
+      status: "success",
+      message: "Task was updated",
+      data: {
+        task: result,
+      },
+    });
+  } catch (error) {
+    res.status(400).json({
+      status: "fail",
+      message: error.message,
+      error: error,
+    });
+  }
 }
 
 async function deleteTaskByID(req, res) {
