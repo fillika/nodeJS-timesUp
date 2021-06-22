@@ -83,6 +83,61 @@ async function updateTask(req, res) {
   }
 }
 
+async function updateManyTasks(req, res) {
+  const { name, date, set } = req.body;
+
+  if (name && date && set) {
+    try {
+      const dateStart = new Date(date.slice(0, 10));
+      const nextDay = new Date(dateStart).getTime() + 86400000;
+      const dateEnd = new Date(nextDay);
+
+      const query = {
+        name: name,
+        at: {
+          $gte: dateStart,
+          $lte: dateEnd,
+        },
+      };
+
+      const updateResult = await TaskModel.updateMany(query, set);
+      // Todo принимать переменную, по которой нужно получить определенное кол-во тасков.
+      // Todo например это может быть множитель (1 * 60 или 3 * 60)
+      const result = await TaskModel.find({ userID: userID })
+        .sort({ at: "desc" })
+        .limit(80);
+
+      console.log(updateResult);
+
+      if (updateResult.n > 0) {
+        res.status(200).json({
+          status: "success",
+          message: "Task was deleted",
+          data: {
+            tasks: result,
+          },
+        });
+      } else {
+        res.status(400).json({
+          status: "fail",
+          message: "Something went wrong",
+        });
+      }
+    } catch (error) {
+      res.status(400).json({
+        status: "fail",
+        message: error.message,
+        error,
+      });
+    }
+  } else {
+    res.status(400).json({
+      status: "fail",
+      message: "You have to send NAME and DATE and SET in Body.JSON",
+    });
+  }
+}
+
 async function deleteTaskByID(req, res) {
   const { id } = req.params;
 
@@ -120,6 +175,7 @@ async function deleteTaskByID(req, res) {
 
 async function deleteManyTaskByName(req, res) {
   const { name, date } = req.body;
+  // Todo проверка на DATE
   const dateStart = new Date(date.slice(0, 10));
   const nextDay = new Date(dateStart).getTime() + 86400000;
   const dateEnd = new Date(nextDay);
@@ -166,4 +222,5 @@ module.exports = {
   updateTask,
   deleteTaskByID,
   deleteManyTaskByName,
+  updateManyTasks,
 };
