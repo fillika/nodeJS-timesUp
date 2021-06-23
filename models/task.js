@@ -27,6 +27,18 @@ const TaskSchema = new mongoose.Schema({
   },
 });
 
-const TaskModel = mongoose.model("task", TaskSchema);
+const ActiveTaskModel = new mongoose.Schema({
+  userID: {
+    type: String,
+    required: true,
+  },
+  name: {
+    type: String,
+    required: true,
+  },
+})
 
-module.exports = TaskModel;
+const TaskModel = mongoose.model("task", TaskSchema);
+// const ActiveTask = mongoose.model("activeTask", ActiveTaskModel);
+
+module.exports = { TaskModel };

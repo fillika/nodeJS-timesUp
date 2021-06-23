@@ -1,5 +1,5 @@
 const userID = "60c8be578a7a1e9f8c8edecb";
-const TaskModel = require("../models/task");
+const { TaskModel } = require("../models/task");
 const _ = require("lodash");
 
 async function getAllTasks(req, res) {
