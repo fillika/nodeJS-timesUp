@@ -21,6 +21,10 @@ const activeTaskSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  totalTime: {
+    type: String,
+    required: true,
+  },
   duration: {
     type: Number,
     required: true,
