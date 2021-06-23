@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const TaskSchema = new mongoose.Schema({
+const activeTaskSchema = new mongoose.Schema({
   at: {
     type: Date,
     required: true,
@@ -13,10 +13,6 @@ const TaskSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
-  duration: {
-    type: Number,
-    required: true,
-  },
   userID: {
     type: String,
     required: true,
@@ -25,10 +21,15 @@ const TaskSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  duration: {
+    type: Number,
+    required: true,
+  },
+  isTimeActive: {
+    type: Boolean,
+    required: true
+  }
 });
 
-
-
-const TaskModel = mongoose.model("task", TaskSchema);
-
-module.exports = { TaskModel };
+const ActiveTask = mongoose.model("activeTask", activeTaskSchema);
+module.exports = { ActiveTask };

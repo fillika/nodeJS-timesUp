@@ -7,6 +7,7 @@ const cors = require("cors");
 const app = express();
 const connectionDB = require("./dbConnection");
 const taskRouter = require("./routes/tasks");
+const activeTaskRouter = require("./routes/activeTask");
 
 connectionDB();
 
@@ -26,6 +27,7 @@ app.use(express.json());
 app.use(express.static("public"));
 
 app.use("/api/v1/tasks", cors(corsOptions), taskRouter);
+app.use("/api/v1/activeTask", cors(corsOptions), activeTaskRouter);
 
 app.use("*", (req, res) => {
   res.status(404).send(page404);
