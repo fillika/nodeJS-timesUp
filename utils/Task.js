@@ -1,38 +1,55 @@
 class Task {
-  constructor() {}
+  constructor() {
+    this.oneDayLength = 86400000;
+  }
 
   createTaskFromNextDay(data) {
-    const { start } = data;
+    const result = [];
+    const dataCopy = JSON.parse(JSON.stringify(data));
 
-    // Если это разные дни (следующий день), тогда мы разбиваем таск и создаем 2 задачи
+    let start = dataCopy.start,
+      duration = dataCopy.duration;
+    this.createTaskListFromLongDate(data, start, duration, result);
+    return result;
+  }
+
+  createTaskListFromLongDate(data, start, duration, result) {
     const startDay = {
       day: new Date(start).getDate(),
       month: new Date(start).getMonth() + 1,
       year: new Date(start).getFullYear(),
     };
 
-    const currentDayInMs = new Date(
-      `${startDay.year}-${startDay.month}-${startDay.day}`
-    ).getTime(); // Нахожу начало текущего дня
-    const nextDayInMS = currentDayInMs + 86400000; // Нахожу начало следующего дня
+    const currentDate = `${startDay.year}-${startDay.month}-${startDay.day}`;
+
+    const currentDayInMs = new Date(currentDate).getTime(); // Нахожу начало текущего дня
+    const nextDayInMS = currentDayInMs + this.oneDayLength; // Нахожу начало следующего дня
     const restOfCurrentDay = nextDayInMS - new Date(start).getTime(); // Это остаток для текущего дня у задачи.
 
-    const currentTask = {
+    result.push({
       ...data,
+      start: start,
       stop: nextDayInMS - 1,
       at: nextDayInMS - 1,
       duration: restOfCurrentDay,
-    };
+    });
 
-    const nextDayTask = {
-      ...data,
-      start: nextDayInMS, // начало дня
-      duration: data.duration - restOfCurrentDay, // Высчитываем оставшуюся длительность
-      stop: nextDayInMS + data.duration - restOfCurrentDay, // Получаем время, когда таск закончился
-      at: nextDayInMS + data.duration - restOfCurrentDay + 1000, // Дата для сортировки, всегда на 1 сек больше
-    };
+    start = nextDayInMS;
+    duration -= this.oneDayLength;
 
-    return [currentTask, nextDayTask];
+    if (duration > 0) {
+      this.createTaskListFromLongDate(data, start, duration, result);
+    } else {
+      start = nextDayInMS;
+
+      result.push({
+        ...data,
+        start: start,
+        stop: new Date(data.stop).getTime(),
+        at: new Date(data.stop).getTime() + 1000,
+        duration: duration + this.oneDayLength,
+      });
+    }
   }
 }
 
