@@ -1,34 +1,30 @@
-const userID = "60c8be578a7a1e9f8c8edecb";
 const { TaskModel } = require("../models/task");
 const taskManager = require("../utils/Task");
 const _ = require("lodash");
+const AppError = require("../utils/Error");
 
+const userID = "60c8be578a7a1e9f8c8edecb";
 const limit = 80;
 
-async function getAllTasks(req, res) {
-  const result = await getTasks(TaskModel, userID, limit);
-
-  try {
-    res.status(200).json({
-      status: "success",
-      message: "Get all tasks",
-      data: {
-        tasks: result,
-      },
-    });
-  } catch (error) {
-    res.status(404).json({
-      status: "fail",
-      message: error.message,
-      error: error,
-      data: {
-        tasks: null,
-      },
-    });
-  }
+function asyncCatchHandler(fn) {
+  return function (req, res, next) {
+    fn(req, res, next).catch(next);
+  };
 }
 
-async function createTask(req, res) {
+exports.getAllTasks = asyncCatchHandler(async function (req, res, next) {
+  const result = await getTasks(TaskModel, userID, limit);
+
+  res.status(200).json({
+    status: "success",
+    message: "Get all tasks",
+    data: {
+      tasks: result,
+    },
+  });
+});
+
+exports.createTask = asyncCatchHandler(async function (req, res, next) {
   // Проверить at и start.
   const { at, start } = req.body;
   const nextDay = new Date(at).getDate();
@@ -40,128 +36,65 @@ async function createTask(req, res) {
     const task = await TaskModel.create(taskArray);
     const result = await getTasks(TaskModel, userID, limit);
 
-    try {
-      res.status(200).json({
-        status: "success",
-        action: "CREATE",
-        message: "All tasks have been created",
-        data: {
-          task,
-          result,
-        },
-      });
-    } catch (error) {
-      res.status(400).json({
-        status: "fail",
-        message: error.message,
-        error: error,
-      });
-    }
+    res.status(200).json({
+      status: "success",
+      action: "CREATE",
+      message: "All tasks have been created",
+      data: {
+        task,
+        result,
+      },
+    });
   } else {
-    try {
-      const task = await TaskModel.create(req.body);
-      const result = await getTasks(TaskModel, userID, limit);
-
-      res.status(200).json({
-        status: "success",
-        action: "CREATE",
-        message: "Task has been created",
-        data: {
-          task,
-          tasks: result,
-        },
-      });
-    } catch (error) {
-      res.status(400).json({
-        status: "fail",
-        message: error.message,
-        error: error,
-      });
-    }
-  }
-}
-
-async function updateTask(req, res) {
-  try {
-    const { id } = req.params;
-    await TaskModel.findByIdAndUpdate(id, req.body);
+    const task = await TaskModel.create(req.body);
     const result = await getTasks(TaskModel, userID, limit);
 
     res.status(200).json({
       status: "success",
-      message: "Task was updated",
+      action: "CREATE",
+      message: "Task has been created",
       data: {
+        task,
         tasks: result,
       },
     });
-  } catch (error) {
-    res.status(400).json({
-      status: "fail",
-      message: error.message,
-      error: error,
-    });
   }
-}
+});
 
-async function updateManyTasks(req, res) {
+exports.updateTask = asyncCatchHandler(async function (req, res, next) {
+  const { id } = req.params;
+  await TaskModel.findByIdAndUpdate(id, req.body);
+  const result = await getTasks(TaskModel, userID, limit);
+
+  res.status(200).json({
+    status: "success",
+    message: "Task was updated",
+    data: {
+      tasks: result,
+    },
+  });
+});
+
+exports.updateManyTasks = asyncCatchHandler(async function (req, res, next) {
   const { name, date, set } = req.body;
 
   if (name && date && set) {
-    try {
-      const dateStart = new Date(date.slice(0, 10));
-      const nextDay = new Date(dateStart).getTime() + 86400000;
-      const dateEnd = new Date(nextDay);
+    const dateStart = new Date(date.slice(0, 10));
+    const nextDay = new Date(dateStart).getTime() + 86400000;
+    const dateEnd = new Date(nextDay);
 
-      const query = {
-        name: name,
-        at: {
-          $gte: dateStart,
-          $lte: dateEnd,
-        },
-      };
+    const query = {
+      name: name,
+      at: {
+        $gte: dateStart,
+        $lte: dateEnd,
+      },
+    };
 
-      const updateResult = await TaskModel.updateMany(query, set);
-      const result = await getTasks(TaskModel, userID, limit);
+    const updateResult = await TaskModel.updateMany(query, set);
+    const result = await getTasks(TaskModel, userID, limit);
 
-      console.log(updateResult);
-
-      if (updateResult.n > 0) {
-        res.status(200).json({
-          status: "success",
-          message: "Task was deleted",
-          data: {
-            tasks: result,
-          },
-        });
-      } else {
-        res.status(400).json({
-          status: "fail",
-          message: "Something went wrong",
-        });
-      }
-    } catch (error) {
-      res.status(400).json({
-        status: "fail",
-        message: error.message,
-        error,
-      });
-    }
-  } else {
-    res.status(400).json({
-      status: "fail",
-      message: "You have to send NAME and DATE and SET in Body.JSON",
-    });
-  }
-}
-
-async function deleteTaskByID(req, res) {
-  const { id } = req.params;
-
-  if (id) {
-    try {
-      await TaskModel.findByIdAndDelete(id);
-      const result = await getTasks(TaskModel, userID, limit);
-
+    if (updateResult.n > 0) {
       res.status(200).json({
         status: "success",
         message: "Task was deleted",
@@ -169,22 +102,38 @@ async function deleteTaskByID(req, res) {
           tasks: result,
         },
       });
-    } catch (error) {
-      res.status(400).json({
-        status: "fail",
-        message: error.message,
-        error,
-      });
+    } else {
+      next(new AppError("Something went wrong in updateManyTasks", 400));
     }
   } else {
-    res.status(400).json({
-      status: "fail",
-      message: "You have to send :ID param",
-    });
+    next(new AppError("You have to send NAME and DATE and SET in Body.JSON in updateManyTasks", 400));
   }
-}
+});
 
-async function deleteManyTaskByName(req, res) {
+exports.deleteTaskByID = asyncCatchHandler(async function (req, res, next) {
+  const { id } = req.params;
+
+  if (id) {
+    await TaskModel.findByIdAndDelete(id);
+    const result = await getTasks(TaskModel, userID, limit);
+
+    res.status(200).json({
+      status: "success",
+      message: "Task was deleted",
+      data: {
+        tasks: result,
+      },
+    });
+  } else {
+    next(new AppError("You have to send :ID param in deleteTaskByID", 400));
+  }
+});
+
+exports.deleteManyTaskByName = asyncCatchHandler(async function (
+  req,
+  res,
+  next
+) {
   const { name, date } = req.body;
   // Todo проверка на DATE
   const dateStart = new Date(date.slice(0, 10));
@@ -192,51 +141,29 @@ async function deleteManyTaskByName(req, res) {
   const dateEnd = new Date(nextDay);
 
   if (name && date) {
-    try {
-      const query = {
-        name: name,
-        at: {
-          $gte: dateStart,
-          $lte: dateEnd,
-        },
-      };
-      const result = await TaskModel.deleteMany(query);
+    const query = {
+      name: name,
+      at: {
+        $gte: dateStart,
+        $lte: dateEnd,
+      },
+    };
+    const result = await TaskModel.deleteMany(query);
 
-      if (result.deletedCount) {
-        res.status(204).json({
-          status: "success",
-          message: "All task was deleted",
-        });
-      } else {
-        const err = new Error("Task does not exist");
-        err.deletedCount = result.deletedCount;
-        throw err;
-      }
-    } catch (error) {
-      res.status(400).json({
-        status: "fail",
-        message: error.message,
-        error,
+    if (result.deletedCount) {
+      res.status(204).json({
+        status: "success",
+        message: "All task was deleted",
       });
+    } else {
+      next(new AppError("Task does not exist in deleteManyTaskByName", 400));
     }
   } else {
-    res.status(400).json({
-      status: "fail",
-      message: "You have to send NAME in Body.JSON",
-    });
+    next(new AppError("You have to send NAME in Body.JSON in deleteManyTaskByName", 400));
   }
-}
+});
 
 // Utils
 function getTasks(model, userID, limit) {
   return model.find({ userID: userID }).limit(limit).sort({ at: "desc" });
 }
-
-module.exports = {
-  getAllTasks,
-  createTask,
-  updateTask,
-  deleteTaskByID,
-  deleteManyTaskByName,
-  updateManyTasks,
-};

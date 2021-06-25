@@ -8,13 +8,10 @@ const app = express();
 const connectionDB = require("./dbConnection");
 const taskRouter = require("./routes/tasks");
 const activeTaskRouter = require("./routes/activeTask");
+const AppError = require("./utils/Error");
+const globalErrorHandler = require("./controllers/errorController.js");
 
 connectionDB();
-
-const page404 = fs.readFileSync(
-  path.join(__dirname, "/public/404.html"),
-  "utf8"
-);
 
 var corsOptions = {
   origin: "http://127.0.0.1:5500",
@@ -29,8 +26,10 @@ app.use(express.static("public"));
 app.use("/api/v1/tasks", cors(corsOptions), taskRouter);
 app.use("/api/v1/activeTask", cors(corsOptions), activeTaskRouter);
 
-app.use("*", (req, res) => {
-  res.status(404).send(page404);
+app.all("*", (req, res, next) => {
+  next(new AppError(`Can't find ${req.originalUrl}`, 404));
 });
+
+app.use(globalErrorHandler);
 
 module.exports = app;
