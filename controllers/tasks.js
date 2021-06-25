@@ -3,10 +3,10 @@ const { TaskModel } = require("../models/task");
 const taskManager = require("../utils/Task");
 const _ = require("lodash");
 
+const limit = 80;
+
 async function getAllTasks(req, res) {
-  const result = await TaskModel.find({ userID: userID })
-    .sort({ at: "desc" })
-    .limit(80);
+  const result = await getTasks(TaskModel, userID, limit);
 
   try {
     res.status(200).json({
@@ -38,10 +38,7 @@ async function createTask(req, res) {
     // Если это разные дни, тогда мы разбиваем таск и создаем 2 задачи
     const taskArray = taskManager.createTaskFromNextDay(req.body);
     const task = await TaskModel.create(taskArray);
-
-    const result = await TaskModel.find({ userID: userID })
-      .sort({ at: "desc" })
-      .limit(80);
+    const result = await getTasks(TaskModel, userID, limit);
 
     try {
       res.status(200).json({
@@ -63,12 +60,7 @@ async function createTask(req, res) {
   } else {
     try {
       const task = await TaskModel.create(req.body);
-
-      // Todo принимать переменную, по которой нужно получить определенное кол-во тасков.
-      // Todo например это может быть множитель (1 * 60 или 3 * 60)
-      const result = await TaskModel.find({ userID: userID })
-        .sort({ at: "desc" })
-        .limit(80);
+      const result = await getTasks(TaskModel, userID, limit);
 
       res.status(200).json({
         status: "success",
@@ -93,12 +85,7 @@ async function updateTask(req, res) {
   try {
     const { id } = req.params;
     await TaskModel.findByIdAndUpdate(id, req.body);
-
-    // Todo принимать переменную, по которой нужно получить определенное кол-во тасков.
-    // Todo например это может быть множитель (1 * 60 или 3 * 60)
-    const result = await TaskModel.find({ userID: userID })
-      .sort({ at: "desc" })
-      .limit(80);
+    const result = await getTasks(TaskModel, userID, limit);
 
     res.status(200).json({
       status: "success",
@@ -134,11 +121,7 @@ async function updateManyTasks(req, res) {
       };
 
       const updateResult = await TaskModel.updateMany(query, set);
-      // Todo принимать переменную, по которой нужно получить определенное кол-во тасков.
-      // Todo например это может быть множитель (1 * 60 или 3 * 60)
-      const result = await TaskModel.find({ userID: userID })
-        .sort({ at: "desc" })
-        .limit(80);
+      const result = await getTasks(TaskModel, userID, limit);
 
       console.log(updateResult);
 
@@ -177,12 +160,7 @@ async function deleteTaskByID(req, res) {
   if (id) {
     try {
       await TaskModel.findByIdAndDelete(id);
-
-      // Todo принимать переменную, по которой нужно получить определенное кол-во тасков.
-      // Todo например это может быть множитель (1 * 60 или 3 * 60)
-      const result = await TaskModel.find({ userID: userID })
-        .sort({ at: "desc" })
-        .limit(80);
+      const result = await getTasks(TaskModel, userID, limit);
 
       res.status(200).json({
         status: "success",
@@ -247,6 +225,11 @@ async function deleteManyTaskByName(req, res) {
       message: "You have to send NAME in Body.JSON",
     });
   }
+}
+
+// Utils
+function getTasks(model, userID, limit) {
+  return model.find({ userID: userID }).limit(limit).sort({ at: "desc" });
 }
 
 module.exports = {
