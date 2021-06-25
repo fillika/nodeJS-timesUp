@@ -2,17 +2,23 @@ const { TaskModel } = require("../models/task");
 const taskManager = require("../utils/Task");
 const _ = require("lodash");
 const AppError = require("../utils/Error");
+const asyncCatchHandler = require("../utils/asyncCatchHandler");
 
 const userID = "60c8be578a7a1e9f8c8edecb";
 const limit = 80;
 
-function asyncCatchHandler(fn) {
-  return function (req, res, next) {
-    fn(req, res, next).catch(next);
-  };
-}
+exports.getAllTasks = asyncCatchHandler(getAllTasks);
+exports.createTask = asyncCatchHandler(createTask);
+exports.updateTask = asyncCatchHandler(updateTask);
+exports.updateManyTasks = asyncCatchHandler(updateManyTasks);
+exports.deleteTaskByID = asyncCatchHandler(deleteTaskByID);
+exports.deleteManyTaskByName = asyncCatchHandler(deleteManyTaskByName);
 
-exports.getAllTasks = asyncCatchHandler(async function (req, res, next) {
+// Utils
+function getTasks(model, userID, limit) {
+  return model.find({ userID: userID }).limit(limit).sort({ at: "desc" });
+}
+async function getAllTasks(req, res, next) {
   const result = await getTasks(TaskModel, userID, limit);
 
   res.status(200).json({
@@ -22,9 +28,8 @@ exports.getAllTasks = asyncCatchHandler(async function (req, res, next) {
       tasks: result,
     },
   });
-});
-
-exports.createTask = asyncCatchHandler(async function (req, res, next) {
+}
+async function createTask(req, res, next) {
   // Проверить at и start.
   const { at, start } = req.body;
   const nextDay = new Date(at).getDate();
@@ -59,9 +64,8 @@ exports.createTask = asyncCatchHandler(async function (req, res, next) {
       },
     });
   }
-});
-
-exports.updateTask = asyncCatchHandler(async function (req, res, next) {
+}
+async function updateTask(req, res, next) {
   const { id } = req.params;
   await TaskModel.findByIdAndUpdate(id, req.body);
   const result = await getTasks(TaskModel, userID, limit);
@@ -73,9 +77,8 @@ exports.updateTask = asyncCatchHandler(async function (req, res, next) {
       tasks: result,
     },
   });
-});
-
-exports.updateManyTasks = asyncCatchHandler(async function (req, res, next) {
+}
+async function updateManyTasks(req, res, next) {
   const { name, date, set } = req.body;
 
   if (name && date && set) {
@@ -106,11 +109,15 @@ exports.updateManyTasks = asyncCatchHandler(async function (req, res, next) {
       next(new AppError("Something went wrong in updateManyTasks", 400));
     }
   } else {
-    next(new AppError("You have to send NAME and DATE and SET in Body.JSON in updateManyTasks", 400));
+    next(
+      new AppError(
+        "You have to send NAME and DATE and SET in Body.JSON in updateManyTasks",
+        400
+      )
+    );
   }
-});
-
-exports.deleteTaskByID = asyncCatchHandler(async function (req, res, next) {
+}
+async function deleteTaskByID(req, res, next) {
   const { id } = req.params;
 
   if (id) {
@@ -127,13 +134,8 @@ exports.deleteTaskByID = asyncCatchHandler(async function (req, res, next) {
   } else {
     next(new AppError("You have to send :ID param in deleteTaskByID", 400));
   }
-});
-
-exports.deleteManyTaskByName = asyncCatchHandler(async function (
-  req,
-  res,
-  next
-) {
+}
+async function deleteManyTaskByName(req, res, next) {
   const { name, date } = req.body;
   // Todo проверка на DATE
   const dateStart = new Date(date.slice(0, 10));
@@ -159,11 +161,11 @@ exports.deleteManyTaskByName = asyncCatchHandler(async function (
       next(new AppError("Task does not exist in deleteManyTaskByName", 400));
     }
   } else {
-    next(new AppError("You have to send NAME in Body.JSON in deleteManyTaskByName", 400));
+    next(
+      new AppError(
+        "You have to send NAME in Body.JSON in deleteManyTaskByName",
+        400
+      )
+    );
   }
-});
-
-// Utils
-function getTasks(model, userID, limit) {
-  return model.find({ userID: userID }).limit(limit).sort({ at: "desc" });
 }
