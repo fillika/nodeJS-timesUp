@@ -1,8 +1,8 @@
 const app = require("./app");
 
 const server = {
-  port: 22222,
-  host: "127.0.0.1",
+  port: process.env.PORT,
+  host: process.env.HOST,
 };
 
 app.listen(server.port, server.host, () => {
