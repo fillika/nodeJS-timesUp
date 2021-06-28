@@ -1,6 +1,7 @@
 require("dotenv").config({ path: `${__dirname}/config.env` });
 
 const express = require("express");
+const formidable = require('express-formidable');
 const cors = require("cors");
 const app = express();
 const connectionDB = require("./dbConnection");
@@ -20,6 +21,7 @@ var corsOptions = {
 
 app.use(cors());
 app.use(express.json());
+app.use(formidable());
 app.use(express.static("public"));
 
 app.use("/api/v1/tasks", cors(corsOptions), taskRouter);

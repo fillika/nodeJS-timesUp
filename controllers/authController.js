@@ -64,7 +64,7 @@ const checkIsLogin = async (req, res, next) => {
 
 // Log in
 const logIn = async (req, res, next) => {
-  const { email, password } = req.body;
+  const { email, password } = req.fields;
 
   if (!email || !password) {
     return next(new AppError("Please, provide your email and password"));
@@ -72,6 +72,10 @@ const logIn = async (req, res, next) => {
   // Сравнить email и выдать токен
   const currentUser = await UserModel.findOne({ email }).select('+password');
   const isValid = await currentUser.comparePasswords(password, currentUser.password);
+
+  if (!isValid) {
+    return next(new AppError("Incorrect email or password"));
+  }
 
   const token = signToken(currentUser._id);
 
