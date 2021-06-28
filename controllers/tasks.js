@@ -50,7 +50,9 @@ async function createTask(req, res, next) {
       },
     });
   } else {
-    const task = await TaskModel.create(req.body);
+    const newTask = JSON.parse(JSON.stringify(req.body));
+    newTask.userID = req.user.id;
+    const task = await TaskModel.create(newTask);
     const result = await getTasks(TaskModel, req.user.id, limit);
 
     res.status(200).json({
