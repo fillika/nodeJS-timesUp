@@ -24,8 +24,8 @@ const signUp = async (req, res, next) => {
 
   res.status(201).json({
     status: "success",
-    token,
     data: {
+      token,
       user: {
         name: newUser.name,
       },
@@ -50,7 +50,7 @@ const checkIsLogin = async (req, res, next) => {
   const decodedData = await verifyPromise(token, process.env.JWT_SECRET);
 
   const currentUser = await UserModel.findById(decodedData.id);
-  const isPasswordChanged = currentUser.compareChangedPassword(decodedData.iat);
+  const isPasswordChanged = currentUser.checkPasswordDate(decodedData.iat);
 
   if (isPasswordChanged) {
     return next(
@@ -69,11 +69,17 @@ const logIn = async (req, res, next) => {
   if (!email || !password) {
     return next(new AppError("Please, provide your email and password"));
   }
-
   // Сравнить email и выдать токен
+  const currentUser = await UserModel.findOne({ email }).select('+password');
+  const isValid = await currentUser.comparePasswords(password, currentUser.password);
+
+  const token = signToken(currentUser._id);
 
   res.status(200).json({
     status: "success",
+    data: {
+      token,
+    },
   });
 };
 

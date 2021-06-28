@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
 
 const UserSchema = new mongoose.Schema({
   name: {
@@ -50,16 +50,19 @@ UserSchema.pre("save", async function (next) {
   next();
 });
 
-UserSchema.methods.compareChangedPassword = function(tokenTimestamp) {
+UserSchema.methods.compareChangedPassword = function (tokenTimestamp) {
   if (!this.passwordChangedAt) return false;
 
   if (this.passwordChangedAt.getTime() / 1000 > tokenTimestamp) {
     return true;
   }
-  
-  return false;
-}
 
+  return false;
+};
+
+UserSchema.methods.comparePasswords = async function (pswFromFrom, pswFromBase) {
+  return await bcrypt.compare(pswFromFrom, pswFromBase);
+};
 
 const UserModel = mongoose.model("user", UserSchema);
 
