@@ -4,7 +4,10 @@ const {
   getActiveTask,
   updateActiveTask,
 } = require("../controllers/activeTask");
+const { checkIsLogin } = require("../controllers/authController");
 
-router.route("/:id").get(getActiveTask).patch(updateActiveTask);
+router.use(checkIsLogin)
+router.route("/").patch(updateActiveTask).get(getActiveTask)
+
 
 module.exports = router;

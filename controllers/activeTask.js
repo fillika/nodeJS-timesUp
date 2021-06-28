@@ -1,69 +1,54 @@
 const { ActiveTask } = require("../models/activeTask");
+const asyncCatchHandler = require("../utils/asyncCatchHandler");
 
-async function getActiveTask(req, res) {
-  const { id } = req.params;
+const getActiveTask = async (req, res, next) => {
+  const { id } = req.user;
 
-  try {
-    const result = await ActiveTask.findOne({ userID: id });
+  const result = await ActiveTask.findOne({ userID: id });
 
-    res.status(200).json({
-      status: "success",
-      data: {
-        activeTask: result,
-      },
-    });
-  } catch (error) {
-    res.status(400).json({
-      status: "fail",
-      message: error.message,
-      error: error,
-    });
-  }
-}
+  res.status(200).json({
+    status: "success",
+    data: {
+      activeTask: result,
+    },
+  });
+};
 
-async function updateActiveTask(req, res) {
-  const { id } = req.params;
+const updateActiveTask = async (req, res, next) => {
+  const { id } = req.user;
+  const newBody = JSON.parse(JSON.stringify(req.body))
+  newBody.userID = id;
 
-  try {
-    const result = await ActiveTask.findOneAndUpdate({ userID: id }, req.body, {
-      new: true,
-    });
+  const result = await ActiveTask.findOneAndUpdate({ userID: id }, newBody, {
+    new: true,
+  });
 
-    if (result === null) {
-      const createdTask = await createNewActiveTask(req.body);
-      
-      res.status(200).json({
-        status: "success",
-        message: "Task has been created",
-        data: {
-          activeTask: createdTask,
-        },
-      });
-      return;
-    }
+  if (result === null) {
+    const createdTask = await createNewActiveTask(newBody);
 
     res.status(200).json({
       status: "success",
-      message: "Task has been updated",
+      message: "Task has been created",
       data: {
-        activeTask: result,
+        activeTask: createdTask,
       },
     });
-  } catch (error) {
-    res.status(400).json({
-      status: "fail",
-      message: error.message,
-      error: error,
-    });
+    return;
   }
-}
+
+  res.status(200).json({
+    status: "success",
+    message: "Task has been updated",
+    data: {
+      activeTask: result,
+    },
+  });
+};
+
+exports.getActiveTask = asyncCatchHandler(getActiveTask);
+exports.updateActiveTask = asyncCatchHandler(updateActiveTask);
 
 async function createNewActiveTask(data) {
   const result = await ActiveTask.create(data);
   return result;
 }
-
-module.exports = {
-  getActiveTask,
-  updateActiveTask,
-};
