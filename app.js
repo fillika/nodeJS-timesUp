@@ -6,6 +6,7 @@ const app = express();
 const connectionDB = require("./dbConnection");
 const taskRouter = require("./routes/tasks");
 const activeTaskRouter = require("./routes/activeTask");
+const authRouter = require("./routes/authRouter");
 const AppError = require("./utils/Error");
 const globalErrorHandler = require("./controllers/errorController.js");
 
@@ -23,6 +24,7 @@ app.use(express.static("public"));
 
 app.use("/api/v1/tasks", cors(corsOptions), taskRouter);
 app.use("/api/v1/activeTask", cors(corsOptions), activeTaskRouter);
+app.use("/api/v1/", cors(corsOptions), authRouter);
 
 app.all("*", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl}`, 404));
