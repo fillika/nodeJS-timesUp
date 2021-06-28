@@ -4,7 +4,6 @@ const _ = require("lodash");
 const AppError = require("../utils/Error");
 const asyncCatchHandler = require("../utils/asyncCatchHandler");
 
-const userID = "60c8be578a7a1e9f8c8edecb";
 const limit = 80;
 
 exports.getAllTasks = asyncCatchHandler(getAllTasks);
@@ -19,7 +18,7 @@ function getTasks(model, userID, limit) {
   return model.find({ userID: userID }).limit(limit).sort({ at: "desc" });
 }
 async function getAllTasks(req, res, next) {
-  const result = await getTasks(TaskModel, userID, limit);
+  const result = await getTasks(TaskModel, req.user.id, limit);
 
   res.status(200).json({
     status: "success",
@@ -39,7 +38,7 @@ async function createTask(req, res, next) {
     // Если это разные дни, тогда мы разбиваем таск и создаем 2 задачи
     const taskArray = taskManager.createTaskFromNextDay(req.body);
     const task = await TaskModel.create(taskArray);
-    const result = await getTasks(TaskModel, userID, limit);
+    const result = await getTasks(TaskModel, req.user.id, limit);
 
     res.status(200).json({
       status: "success",
@@ -52,7 +51,7 @@ async function createTask(req, res, next) {
     });
   } else {
     const task = await TaskModel.create(req.body);
-    const result = await getTasks(TaskModel, userID, limit);
+    const result = await getTasks(TaskModel, req.user.id, limit);
 
     res.status(200).json({
       status: "success",
@@ -68,7 +67,7 @@ async function createTask(req, res, next) {
 async function updateTask(req, res, next) {
   const { id } = req.params;
   await TaskModel.findByIdAndUpdate(id, req.body);
-  const result = await getTasks(TaskModel, userID, limit);
+  const result = await getTasks(TaskModel, req.user.id, limit);
 
   res.status(200).json({
     status: "success",
@@ -95,7 +94,7 @@ async function updateManyTasks(req, res, next) {
     };
 
     const updateResult = await TaskModel.updateMany(query, set);
-    const result = await getTasks(TaskModel, userID, limit);
+    const result = await getTasks(TaskModel, req.user.id, limit);
 
     if (updateResult.n > 0) {
       res.status(200).json({
@@ -122,7 +121,7 @@ async function deleteTaskByID(req, res, next) {
 
   if (id) {
     await TaskModel.findByIdAndDelete(id);
-    const result = await getTasks(TaskModel, userID, limit);
+    const result = await getTasks(TaskModel, req.user.id, limit);
 
     res.status(200).json({
       status: "success",

@@ -50,7 +50,7 @@ UserSchema.pre("save", async function (next) {
   next();
 });
 
-UserSchema.methods.compareChangedPassword = function (tokenTimestamp) {
+UserSchema.methods.checkPasswordDate = function (tokenTimestamp) {
   if (!this.passwordChangedAt) return false;
 
   if (this.passwordChangedAt.getTime() / 1000 > tokenTimestamp) {

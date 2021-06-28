@@ -11,7 +11,9 @@ const {checkIsLogin} = require('../controllers/authController')
 
 const router = express.Router();
 
-router.route("/").get(checkIsLogin, getAllTasks).post(createTask).delete(deleteManyTaskByName).patch(updateManyTasks);
+router.use(checkIsLogin)
+
+router.route("/").get(getAllTasks).post(createTask).delete(deleteManyTaskByName).patch(updateManyTasks);
 router.route("/:id").patch(updateTask).delete(deleteTaskByID);
 
 module.exports = router;
