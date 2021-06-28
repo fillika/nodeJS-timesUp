@@ -1,4 +1,5 @@
 var jwt = require("jsonwebtoken");
+const { promisify } = require("util");
 const asyncCatchHandler = require("../utils/asyncCatchHandler");
 const { UserModel } = require("../models/userModel");
 const AppError = require("../utils/Error");
@@ -32,4 +33,50 @@ const signUp = async (req, res, next) => {
   });
 };
 
+// Check logged user or not
+const checkIsLogin = async (req, res, next) => {
+  let token = null;
+  const { authorization } = req.headers;
+
+  if (authorization && authorization.startsWith("Times")) {
+    token = authorization.slice(6);
+  }
+
+  if (!token) {
+    return next(new AppError("Please, log in.", 401));
+  }
+
+  const verifyPromise = promisify(jwt.verify);
+  const decodedData = await verifyPromise(token, process.env.JWT_SECRET);
+
+  const currentUser = await UserModel.findById(decodedData.id);
+  const isPasswordChanged = currentUser.compareChangedPassword(decodedData.iat);
+
+  if (isPasswordChanged) {
+    return next(
+      new AppError("Password recently was change. Please log in again", 401)
+    );
+  }
+
+  req.user = currentUser;
+  next();
+};
+
+// Log in
+const logIn = async (req, res, next) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return next(new AppError("Please, provide your email and password"));
+  }
+
+  // Сравнить email и выдать токен
+
+  res.status(200).json({
+    status: "success",
+  });
+};
+
 exports.signUp = asyncCatchHandler(signUp);
+exports.checkIsLogin = asyncCatchHandler(checkIsLogin);
+exports.logIn = asyncCatchHandler(logIn);

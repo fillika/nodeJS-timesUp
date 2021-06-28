@@ -32,8 +32,10 @@ const validationDBError = (err) => {
     .join(". ");
   return new AppError(errorsMessages, 400);
 };
-
-const handlDuplicatedFieldsDB = err => {
+const validationJWTError = (err) => {
+  return new AppError("Please, log in", 401);
+};
+const handlDuplicatedFieldsDB = (err) => {
   // keyValue, value
   const values = Object.values(err.keyValue);
   const message = `Duplicate field value: '${values}'. Please use another value`;
@@ -41,23 +43,26 @@ const handlDuplicatedFieldsDB = err => {
 };
 
 module.exports = (err, req, res, next) => {
+  // console.error("ERROR:", err);
   let error = JSON.parse(JSON.stringify(err));
 
   error.statusCode = error.statusCode || 500;
   error.status = error.status || "error";
-  
-  console.error("ERROR:", error);
-  
+  error.message = err.message;
+
   switch (error.name) {
     case "ValidationError":
       error = validationDBError(error);
+      break;
+    case "JsonWebTokenError":
+      error = validationJWTError(error);
       break;
 
     default:
       break;
   }
 
-  if (error.code === 11000) error = handlDuplicatedFieldsDB(error);;
+  if (error.code === 11000) error = handlDuplicatedFieldsDB(error);
 
   sendErrorForProduction(error, res);
 };
