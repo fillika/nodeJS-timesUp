@@ -17,8 +17,7 @@ const sendErrorForProduction = (err, res) => {
       message: err.message,
     });
   }
-  // 1) Log err
-  // console.error('ERROR:', err);
+
   // Programming or other unknown errL don't leak err details
   return res.status(500).json({
     status: "error",
@@ -34,12 +33,21 @@ const validationDBError = (err) => {
   return new AppError(errorsMessages, 400);
 };
 
+const handlDuplicatedFieldsDB = err => {
+  // keyValue, value
+  const values = Object.values(err.keyValue);
+  const message = `Duplicate field value: '${values}'. Please use another value`;
+  return new AppError(message, 400);
+};
+
 module.exports = (err, req, res, next) => {
   let error = JSON.parse(JSON.stringify(err));
 
   error.statusCode = error.statusCode || 500;
   error.status = error.status || "error";
-
+  
+  console.error("ERROR:", error);
+  
   switch (error.name) {
     case "ValidationError":
       error = validationDBError(error);
@@ -48,6 +56,8 @@ module.exports = (err, req, res, next) => {
     default:
       break;
   }
+
+  if (error.code === 11000) error = handlDuplicatedFieldsDB(error);;
 
   // sendDevelopmentError(error, res);
   sendErrorForProduction(error, res);
