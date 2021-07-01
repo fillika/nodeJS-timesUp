@@ -12,7 +12,7 @@ const signToken = (id) =>
 // Register
 const signUp = async (req, res, next) => {
   // проверить, существует ли User по email. Если он существует, выдать ошибку
-  const { name, email, password, passwordConfirm } = req.body;
+  const { name, email, password, passwordConfirm } = req.fields;
   const newUser = await UserModel.create({
     name,
     email,
