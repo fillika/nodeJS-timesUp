@@ -30,6 +30,7 @@ const validationDBError = (err) => {
   const errorsMessages = Object.values(err.errors)
     .map((errObj) => errObj.message)
     .join(". ");
+
   return new AppError(errorsMessages, 400);
 };
 const validationJWTError = (err) => {
