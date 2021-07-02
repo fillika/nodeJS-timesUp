@@ -12,7 +12,7 @@ const signToken = (id) =>
 // Register
 const signUp = async (req, res, next) => {
   // проверить, существует ли User по email. Если он существует, выдать ошибку
-  const { name, email, password, passwordConfirm } = req.fields;
+  const { name, email, password, passwordConfirm } = req.body;
   const newUser = await UserModel.create({
     name,
     email,
@@ -64,7 +64,7 @@ const checkIsLogin = async (req, res, next) => {
 
 // Log in
 const logIn = async (req, res, next) => {
-  const { email, password } = req.fields;
+  const { email, password } = req.body;
 
   if (!email || !password) {
     return next(new AppError("Please, provide your email and password", 401));
